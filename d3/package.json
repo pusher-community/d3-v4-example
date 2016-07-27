@@ -1,0 +1,17 @@
+{
+  "name": "custom-d3",
+  "version": "1.0.0",
+  "description": "custom d3 build example",
+  "main": "build/d3.js",
+  "scripts": {
+    "build": "rollup -c && uglifyjs build/d3.js -c -m -o build/d3.min.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "d3": "^4.1.1",
+    "rollup": "^0.34.1",
+    "rollup-plugin-node-resolve": "^1.7.1",
+    "uglify-js": "^2.7.0"
+  }
+}
