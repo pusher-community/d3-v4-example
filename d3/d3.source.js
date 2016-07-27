@@ -5,5 +5,6 @@ export {
   forceY,
   forceCollide,
   extent,
-  request
+  request,
+  json
 } from 'd3'

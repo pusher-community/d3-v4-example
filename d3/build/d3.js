@@ -2399,6 +2399,21 @@
         : xhr.responseText; // "" on error
   }
 
+  function type(defaultMimeType, response) {
+    return function(url, callback) {
+      var r = request(url).mimeType(defaultMimeType).response(response);
+      if (callback != null) {
+        if (typeof callback !== "function") throw new Error("invalid callback: " + callback);
+        return r.get(callback);
+      }
+      return r;
+    };
+  }
+
+  var json = type("application/json", function(xhr) {
+    return JSON.parse(xhr.responseText);
+  });
+
   var frame = 0;
   var timeout = 0;
   var interval = 0;
@@ -4714,6 +4729,7 @@ var   y0$2 = x0$2;
   exports.forceCollide = collide;
   exports.extent = extent;
   exports.request = request;
+  exports.json = json;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
