@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>d3-v4 example</title>
+  </head>
+  <body>
+    <canvas></canvas>
+
+  <script src="//js.pusher.com/3.1/pusher.min.js"></script>
+  <script src="d3/build/d3.min.js"></script>
+  <!-- <script src="d3.full.js"></script> -->
+  <script type="text/javascript">
+
+var canvas = document.querySelector("canvas"),
+   ctx = canvas.getContext("2d"),
+   w = canvas.width = window.innerWidth,
+   h = canvas.height = window.innerHeight
+
+var x = d3.scaleLinear()
+   .rangeRound([50, w-50])
+
+var nodes = []
+
+var simulation = d3.forceSimulation(nodes)
+   .force("x", d3.forceX(function(d) { return x(d.value)}).strength(1))
+   .force("y", d3.forceY(h / 2))
+   .force("collide", d3.forceCollide(4))
+   .stop()
+
+simulation.on('tick', function(){
+ ctx.clearRect(0, 0, w, h)
+ ctx.beginPath()
+ nodes.forEach(function(d) {
+   ctx.moveTo(d.x + 3, d.y)
+   ctx.arc(d.x, d.y, 3, 0, 2 * Math.PI)
+ })
+ ctx.fill()
+})
+
+
+subscribeIndex('https://pusher-tweet-list.herokuapp.com/tweets', function(err, data) {
+  if(err) throw err
+
+  data.forEach(function(d){
+    if(!d.value){
+      d.value = +new Date(d.created_at)
+      d.index = d.id_str
+      d.x = w
+      d.y = h/2
+    }
+  })
+
+  nodes = data
+
+  x.domain(d3.extent(data, function(d) { return d.value }));
+
+  simulation
+    .nodes(nodes)
+    .alpha(.5)
+    .restart()
+
+})
+
+
+
+// get data from an endpoint that also gives an
+// X-Pusher header for providing more items.
+function subscribeIndex(endpoint, callback) {
+
+  var items = []
+
+  d3.json(endpoint)
+    .response(function(xhr) {
+      connect(xhr.getResponseHeader('X-Pusher'))
+      return items = JSON.parse(xhr.responseText) || []
+    })
+    .get(callback)
+
+  function connect(config){
+    if(!config) return console.log("no Pusher config")
+
+    config = JSON.parse(config)
+
+    new Pusher(config.key, {
+      cluster: config.cluster,
+      encrypted: true
+    })
+    .subscribe(config.channel)
+    .bind(config.event, function(message){
+      items.unshift(message)
+      items.pop()
+      callback(null, items)
+    })
+
+  }
+}
+
+    </script>
+
+  </body>
+</html>
